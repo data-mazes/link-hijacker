@@ -1,9 +1,20 @@
 'use strict';
 
-function getClosestLink(node, root) {
+function isLink(node) {
+  return node.nodeName && 'a' === node.nodeName?.toLowerCase() && node.href
+}
+
+function getClosestLink(e, root, node) {
+  node = node || e.target
   if (!node || node === root) return;
-  if ('a' !== node.nodeName.toLowerCase() || !node.href) {
-    return getClosestLink(node.parentNode, root);
+
+  const foundFromPath = e.composedPath && e.composedPath().find(isLink)
+  if (foundFromPath) {
+    return foundFromPath
+  }
+
+  if (!isLink(node)) {
+    return getClosestLink(e, root, node.parentNode);
   }
   return node;
 }
@@ -41,7 +52,7 @@ function hijack(options, callback) {
       return;
     }
 
-    var link = getClosestLink(e.target, root);
+    var link = getClosestLink(e, root);
     if (!link) return;
 
     if (options.skipFilter && options.skipFilter(link)) return;
